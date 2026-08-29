@@ -7,15 +7,29 @@ const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 12; // 12 bytes IV is standard for GCM
 
 const encryptionKeyHex = process.env.ENCRYPTION_KEY;
+const isProd = process.env.NODE_ENV === 'production';
+const zeroFallback = '0000000000000000000000000000000000000000000000000000000000000000';
 
-if (!encryptionKeyHex) {
-  console.warn('WARNING: ENCRYPTION_KEY is not defined in the environment. Using fallback key.');
+if (isProd) {
+  if (!encryptionKeyHex) {
+    throw new Error('FATAL: ENCRYPTION_KEY environment variable is not defined. Production startup aborted.');
+  }
+  if (encryptionKeyHex === zeroFallback) {
+    throw new Error('FATAL: ENCRYPTION_KEY cannot be the insecure all-zero fallback in production. Production startup aborted.');
+  }
+  if (encryptionKeyHex.length !== 64) {
+    throw new Error('FATAL: ENCRYPTION_KEY must be exactly 64 hexadecimal characters (32 bytes) in production. Production startup aborted.');
+  }
+} else {
+  if (!encryptionKeyHex) {
+    console.warn('WARNING: ENCRYPTION_KEY is not defined in the environment. Using fallback key.');
+  }
 }
 
 const KEY = Buffer.from(
   encryptionKeyHex && encryptionKeyHex.length === 64
     ? encryptionKeyHex
-    : '0000000000000000000000000000000000000000000000000000000000000000',
+    : zeroFallback,
   'hex'
 );
 

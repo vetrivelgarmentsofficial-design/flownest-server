@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon src/app.ts",
     "build": "prisma generate && tsc",
-    "start": "node dist/app.js",
+    "start": "npx prisma migrate deploy && node dist/app.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prepare": "node -e \"try { if (process.env.NODE_ENV !== 'production' && require('fs').existsSync('.git')) { require('child_process').execSync('husky', { stdio: 'inherit' }) } } catch (e) {}\""
