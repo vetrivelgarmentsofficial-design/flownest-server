@@ -1,0 +1,27 @@
+# Dependency directories
+node_modules/
+
+# Build outputs
+dist/
+tsconfig.tsbuildinfo
+
+# Local environment files (contains production database credentials and API secrets)
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
