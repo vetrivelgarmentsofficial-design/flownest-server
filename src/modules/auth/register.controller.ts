@@ -3,8 +3,9 @@ import { z } from 'zod';
 import { registerBodySchema } from './register.validation';
 import { registerAgency, verifyAgencyEmail, resendVerificationEmail } from './register.service';
 
-const verifyEmailQuerySchema = z.object({
-  token: z.string().min(1, 'Verification token is required'),
+const verifyEmailBodySchema = z.object({
+  email: z.string().email('Please enter a valid email address').trim().toLowerCase(),
+  token: z.string().length(6, 'Verification OTP must be exactly 6 digits'),
 });
 
 const resendVerificationBodySchema = z.object({
@@ -38,9 +39,9 @@ export async function register(req: Request, res: Response, next: NextFunction) 
  */
 export async function verifyEmail(req: Request, res: Response, next: NextFunction) {
   try {
-    const { token } = verifyEmailQuerySchema.parse(req.query);
+    const { email, token } = verifyEmailBodySchema.parse(req.body);
 
-    await verifyAgencyEmail(token);
+    await verifyAgencyEmail(email, token);
 
     res.status(200).json({
       success: true,

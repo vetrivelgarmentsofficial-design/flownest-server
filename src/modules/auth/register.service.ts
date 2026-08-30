@@ -32,9 +32,9 @@ export async function registerAgency(agencyName: string, email: string, password
       throw err;
     }
 
-    // 2. Generate cryptographically secure email verification parameters
-    const token = crypto.randomBytes(32).toString('hex');
-    const tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
+    // 2. Generate cryptographically secure email verification parameters (6-digit OTP)
+    const token = Math.floor(100000 + Math.random() * 900000).toString();
+    const tokenExpiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes from now
 
     // 3. Define trial dates (45 days trial)
     const trialStartDate = new Date();
@@ -101,17 +101,31 @@ export async function registerAgency(agencyName: string, email: string, password
 /**
  * Validates a verification token, updates agency status
  */
-export async function verifyAgencyEmail(token: string) {
+export async function verifyAgencyEmail(email: string, token: string) {
   return runBypassingTenant(async () => {
-    // Find the agency with this token
-    const agency = await prisma.agency.findFirst({
+    // Find the agency with this email
+    const agency = await prisma.agency.findUnique({
       where: {
-        verificationToken: token,
+        email,
       },
     });
 
     if (!agency) {
-      const err: any = new Error('Invalid or expired email verification token.');
+      const err: any = new Error('No agency account found with this email address.');
+      err.statusCode = 404;
+      err.code = 'NOT_FOUND';
+      throw err;
+    }
+
+    if (agency.emailVerified) {
+      const err: any = new Error('This email address has already been verified.');
+      err.statusCode = 400;
+      err.code = 'ALREADY_VERIFIED';
+      throw err;
+    }
+
+    if (agency.verificationToken !== token) {
+      const err: any = new Error('Invalid verification OTP code.');
       err.statusCode = 400;
       err.code = 'INVALID_TOKEN';
       throw err;
@@ -119,7 +133,7 @@ export async function verifyAgencyEmail(token: string) {
 
     // Check if token has expired
     if (agency.verificationTokenExpiresAt && new Date() > agency.verificationTokenExpiresAt) {
-      const err: any = new Error('Verification token has expired. Please request a new one.');
+      const err: any = new Error('Verification OTP has expired. Please request a new one.');
       err.statusCode = 400;
       err.code = 'EXPIRED_TOKEN';
       throw err;
@@ -136,7 +150,7 @@ export async function verifyAgencyEmail(token: string) {
       },
     });
 
-    logger.info('RegisterService', 'Agency email verified successfully', {
+    logger.info('RegisterService', 'Agency email verified successfully via OTP', {
       agencyId: agency.id,
       email: agency.email,
     });
@@ -168,9 +182,9 @@ export async function resendVerificationEmail(email: string) {
       throw err;
     }
 
-    // Generate new token details
-    const token = crypto.randomBytes(32).toString('hex');
-    const tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    // Generate new token details (6-digit OTP)
+    const token = Math.floor(100000 + Math.random() * 900000).toString();
+    const tokenExpiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
 
     await prisma.agency.update({
       where: { id: agency.id },

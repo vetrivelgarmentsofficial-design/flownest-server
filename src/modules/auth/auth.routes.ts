@@ -26,7 +26,7 @@ const authLimiter = rateLimit({
 
 // Apply rate limiting to all auth endpoints (Disabled)
 router.post('/register', register);
-router.get('/verify-email', verifyEmail);
+router.post('/verify-email', verifyEmail);
 router.post('/verify-email/resend', resendVerification);
 router.post('/login', login);
 router.post('/refresh', refresh);

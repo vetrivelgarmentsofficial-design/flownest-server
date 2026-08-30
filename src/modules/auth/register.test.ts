@@ -1,3 +1,13 @@
+import dotenv from 'dotenv';
+import path from 'path';
+import fs from 'fs';
+
+const localEnvPath = path.resolve(process.cwd(), '.env.local');
+if (fs.existsSync(localEnvPath)) {
+  dotenv.config({ path: localEnvPath });
+}
+dotenv.config();
+
 import prisma from '../../config/db';
 import { registerAgency, verifyAgencyEmail, resendVerificationEmail } from './register.service';
 import { runBypassingTenant } from '../../utils/tenant-context';
@@ -94,7 +104,7 @@ async function runTests() {
     // --- Test 4: Verify Email Callback ---
     console.log('\n⏳ Running Test 4: Verify Email Callbacks...');
     const tokenToVerify = updatedAgency!.verificationToken!;
-    const verifyResult = await verifyAgencyEmail(tokenToVerify);
+    const verifyResult = await verifyAgencyEmail(testEmail, tokenToVerify);
 
     if (!verifyResult.emailVerified) {
       throw new Error('Agency emailVerified remains false after callback execution');

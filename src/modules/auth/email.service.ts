@@ -54,24 +54,21 @@ async function sendMail(to: string, subject: string, html: string) {
 }
 
 /**
- * Sends a verification link during onboarding
+ * Sends a verification OTP code during onboarding
  */
 export async function sendVerificationEmail(agencyName: string, toEmail: string, token: string, expiresAt: Date) {
-  const verificationUrl = `${frontendUrl}/verify-email?token=${token}`;
   const subject = `Verify your email for ${agencyName} on FlowNest CRM`;
 
   const html = `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333333; line-height: 1.6;">
       <h2 style="color: #4F46E5;">Welcome to FlowNest CRM!</h2>
       <p>Hello,</p>
-      <p>Thank you for registering your agency <strong>${agencyName}</strong>. To get started with your 45-day free trial, please verify your email address by clicking the button below:</p>
+      <p>Thank you for registering your agency <strong>${agencyName}</strong>. To get started with your 45-day free trial, please verify your email address by entering the following One-Time Password (OTP):</p>
       <div style="text-align: center; margin: 30px 0;">
-        <a href="${verificationUrl}" style="background-color: #4F46E5; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Verify Email Address</a>
+        <span style="background-color: #F3F4F6; color: #4F46E5; font-size: 32px; font-weight: bold; letter-spacing: 5px; padding: 12px 24px; border-radius: 8px; border: 1px dashed #4F46E5; display: inline-block;">${token}</span>
       </div>
-      <p style="font-size: 13px; color: #666666;">Or copy and paste this URL into your browser:<br/>
-      <a href="${verificationUrl}" style="color: #4F46E5;">${verificationUrl}</a></p>
       <hr style="border: none; border-top: 1px solid #eeeeee; margin: 30px 0;" />
-      <p style="font-size: 12px; color: #999999;">This link will expire on ${expiresAt.toLocaleString()} (24 hours from registration).</p>
+      <p style="font-size: 12px; color: #999999;">This verification code will expire on ${expiresAt.toLocaleString()} (15 minutes from request).</p>
       <p style="font-size: 12px; color: #999999;">Security Notice: If you did not register a FlowNest CRM account, you can safely ignore this email.</p>
     </div>
   `;
